@@ -133,7 +133,20 @@ abstract class QueryParameterSetterFactory {
 		return null;
 	}
 
+	/**
+	 * JPA 從這裡去接 spring
+	 * 	RepositoryQueryMethodInvoker.invoke
+	 * 	AbstractJpaQuery implements RepositoryQuery #execute(Object[] parameters)
+	 *
+	 * AbstractJpaQuery.createQuery => AbstractStringBasedJpaQuery.doCreateQuery
+	 * final Lazy<ParameterBinder> parameterBinder = Lazy.of(this::createBinder);
+	 * ParameterBinderFactory.createQueryAwareBinder
+	 * 	QueryParameterSetterFactory basicSetterFactory = QueryParameterSetterFactory.basic(parameters);
+	 * 	createSetters(bindings, query, expressionSetterFactory, basicSetterFactory)
+	 * 	......findParameterForBinding => getRequiredName => return p.getName().orElseThrow(() -> new IllegalStateException(ParameterBinder.PARAMETER_NEEDS_TO_BE_NAMED));
+	 */
 	private static String getRequiredName(JpaParameter p) {
+		// 這裡在 JPA 找不到 param 時會噴錯, 可以往回追 param 從哪來的
 		return p.getName().orElseThrow(() -> new IllegalStateException(ParameterBinder.PARAMETER_NEEDS_TO_BE_NAMED));
 	}
 
